@@ -1,0 +1,15 @@
+node_modules/
+dist/
+dist-electron/
+.env
+.env.local
+*.log
+.DS_Store
+Thumbs.db
+docs/research/
+docs/开源前检查报告.md
+安装包/
+*.tsbuildinfo
+.claude/settings.local.json
+src/types/database.js
+src/types/database.js.map

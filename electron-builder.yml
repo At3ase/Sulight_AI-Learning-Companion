@@ -1,0 +1,22 @@
+appId: com.learningassistant.app
+productName: Learning Assistant
+electronDist: node_modules/electron/dist
+directories:
+  buildResources: resources
+  output: 安装包
+files:
+  - dist/**/*
+  - dist-electron/**/*
+win:
+  target:
+    - target: zip
+      arch: [x64]
+  signAndEditExecutable: false
+mac:
+  target:
+    - target: dmg
+      arch: [x64, arm64]
+linux:
+  target:
+    - target: AppImage
+      arch: [x64]
