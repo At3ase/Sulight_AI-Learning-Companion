@@ -24,8 +24,8 @@
 ### 方式二：开发者启动
 
 ```bash
-git clone <repo-url>
-cd first-cc
+git clone https://github.com/At3ase/Sulight_AI-Learning-Companion.git
+cd Sulight_AI-Learning-Companion
 npm install
 npm run dev
 ```
