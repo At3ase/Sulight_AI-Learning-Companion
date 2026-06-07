@@ -117,6 +117,7 @@ export interface ElectronAPI {
       feynmanScoreTrend: () => Promise<any[]>
       masteryOverview: () => Promise<any>
       weeklyReport: () => Promise<any>
+      subjectProgress: () => Promise<any[]>
     }
   }
   settings: {

@@ -3,6 +3,7 @@ import { createWindow } from './window'
 import { initDatabase } from './services/database/connection'
 import { registerAllIPCHandlers } from './ipc'
 import { closeDatabase } from './services/database/connection'
+import { migrateLocalToCustom } from './services/credential-store'
 
 let mainWindow: BrowserWindow | null = null
 
@@ -48,6 +49,13 @@ app.whenReady().then(async () => {
 
   // Register IPC handlers
   registerAllIPCHandlers()
+
+  // Migrate old 'local' provider → new 'custom' provider
+  try {
+    migrateLocalToCustom()
+  } catch (err) {
+    console.error('Provider migration failed:', err)
+  }
 
   // Create main window
   mainWindow = createWindow()

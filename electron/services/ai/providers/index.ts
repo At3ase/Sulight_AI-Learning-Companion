@@ -1,11 +1,14 @@
 import type { AIProvider } from '../types'
 import { createClaudeProvider } from './claude'
 import { createOpenAIProvider } from './openai'
+import { createCustomProvider } from './custom'
 import { createLocalProvider } from './local'
 
 const providers: Record<string, () => AIProvider> = {
   claude: createClaudeProvider,
   openai: createOpenAIProvider,
+  custom: createCustomProvider,
+  // 'local' kept for backward compatibility — existing Ollama users migrate automatically
   local: createLocalProvider,
 }
 

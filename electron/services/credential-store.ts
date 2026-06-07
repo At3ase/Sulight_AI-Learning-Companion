@@ -81,7 +81,32 @@ export function deleteCredentials(provider: string): void {
 
 export function listProviders(): string[] {
   const db = getDatabase()
-  return (db.prepare('SELECT provider FROM api_credentials WHERE is_active = 1').all() as any[]).map(
-    (row) => row.provider
-  )
+  const rows = db.prepare('SELECT provider FROM api_credentials WHERE is_active = 1').all() as any[]
+  return rows.map((row) => {
+    // Auto-migrate 'local' → 'custom' for backward compatibility
+    if (row.provider === 'local') return 'custom'
+    return row.provider
+  })
+}
+
+/**
+ * Migrate old 'local' provider credentials to new 'custom' provider.
+ * Called once on app startup. Safe to call multiple times.
+ */
+export function migrateLocalToCustom(): void {
+  const localCreds = getCredentials('local')
+  if (!localCreds) return
+
+  // Only migrate if 'custom' doesn't already exist
+  const existingCustom = getCredentials('custom')
+  if (existingCustom) {
+    // Custom already configured — just clean up local
+    deleteCredentials('local')
+    return
+  }
+
+  // Copy local → custom
+  setCredentials('custom', localCreds)
+  // Remove old entry
+  deleteCredentials('local')
 }
