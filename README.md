@@ -75,8 +75,10 @@
 ### 方式一：安装包（推荐）
 
 1. 前往 [Releases](https://github.com/At3ase/Sulight_AI-Learning-Companion/releases) 页面
-2. 下载 `Learning Assistant-1.1.0-win.zip`
+2. 点击[百度网盘下载链接](https://pan.baidu.com/s/1CYPjuXci62nBur0_kIa2uQ)（提取码：`66xy`）下载 `Learning Assistant-1.1.0-win.zip`
 3. 解压后运行 `Learning Assistant.exe`
+
+> 💡 安装包体积约 180MB，已托管至百度网盘，Release 页面提供网盘链接。
 
 ### 方式二：开发者启动
 

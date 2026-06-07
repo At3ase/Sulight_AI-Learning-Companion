@@ -8,7 +8,6 @@ dist-electron/
 Thumbs.db
 docs/research/
 docs/开源前检查报告.md
-安装包/
 *.tsbuildinfo
 .claude/settings.local.json
 src/types/database.js
