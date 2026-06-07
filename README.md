@@ -10,7 +10,7 @@
   <img src="https://img.shields.io/badge/Tailwind-3-06B6D4?logo=tailwindcss&logoColor=white" alt="Tailwind" />
   <img src="https://img.shields.io/badge/Vite-8-646CFF?logo=vite&logoColor=white" alt="Vite" />
   <img src="https://img.shields.io/badge/license-MIT-green" alt="License" />
-  <img src="https://img.shields.io/badge/version-1.0.0-orange" alt="Version" />
+  <img src="https://img.shields.io/badge/version-1.1.0-orange" alt="Version" />
 </p>
 
 <p align="center">
@@ -38,6 +38,7 @@
 - **🎓 课程管理** — 按课程组织学习内容，追踪各科目掌握进度
 - **🚀 首次引导** — 新手引导向导，帮助快速配置和了解功能
 - **⌨ 全局快捷键** — `Ctrl+1/2/3` 切换学习模式，`Ctrl+Shift+F` 专注模式，`Ctrl+R` 复习队列
+- **🔧 组件管理** — 仪表盘右上角「+」自由添加学习连续、今日统计、番茄钟等组件
 - **🌓 深色模式** — 自动适配系统主题，可手动切换
 - **📤 数据导出** — Markdown 笔记 / Anki CSV / JSON 完整备份
 
@@ -45,7 +46,13 @@
 
 - **Claude** (Anthropic) — 推荐，深度推理能力强
 - **OpenAI** (GPT 系列)
+- **DeepSeek** — 高性价比，中文能力强
+- **通义千问 (Qwen)** — 阿里云，qwen-turbo/plus/max
+- **Kimi (月之暗面)** — 长上下文，128k tokens
+- **智谱 GLM** — 清华系，glm-4-flash/glm-4
+- **豆包 (火山引擎)** — 字节跳动
 - **Ollama** — 本地模型，隐私零泄露
+- 统一「自定义 API」卡片，下拉选择预设即可配置
 - 支持流式输出、连接测试、API Key AES-256-GCM 加密存储
 
 ---
@@ -53,7 +60,7 @@
 ## 📸 界面预览
 
 > 💡 运行应用 `npm run dev` 后可截取以下界面截图：
-> - Dashboard 首页 — 三种学习模式入口 + 科目进度
+> - Dashboard 首页 — 学习模式卡片 + 学习概览 + 每日复习 + 可添加组件
 > - Feynman 对话界面 — 与"小费"对话
 > - First Principles 拆解树 — 双栏布局，右侧实时拆解树
 > - Socratic 问答 — 7 种问题类型彩色标签
@@ -68,7 +75,7 @@
 ### 方式一：安装包（推荐）
 
 1. 前往 [Releases](https://github.com/At3ase/Sulight_AI-Learning-Companion/releases) 页面
-2. 下载 `Learning Assistant-1.0.0-win.zip`
+2. 下载 `Learning Assistant-1.1.0-win.zip`
 3. 解压后运行 `Learning Assistant.exe`
 
 ### 方式二：开发者启动
@@ -121,7 +128,7 @@ Electron Shell
     ├── App.tsx              # 根组件 + HashRouter + 全局快捷键 + 首次引导
     ├── components/          # 完整 UI 组件
     │   ├── layout/          # AppLayout, Sidebar, NavigationMenu
-    │   ├── dashboard/       # 首页(快速开始/科目进度/每日复习/考试倒计时)
+    │   ├── dashboard/       # 首页(快速开始/学习概览/每日复习/组件管理/额外组件)
     │   ├── learning-modes/  # 费曼/第一性原理/苏格拉底(含共享组件)
     │   ├── review/          # 3D 翻转卡片 + SM-2 复习队列
     │   ├── focus/           # 全屏番茄钟
