@@ -10,7 +10,7 @@
   <img src="https://img.shields.io/badge/Tailwind-3-06B6D4?logo=tailwindcss&logoColor=white" alt="Tailwind" />
   <img src="https://img.shields.io/badge/Vite-8-646CFF?logo=vite&logoColor=white" alt="Vite" />
   <img src="https://img.shields.io/badge/license-MIT-green" alt="License" />
-  <img src="https://img.shields.io/badge/version-1.1.0-orange" alt="Version" />
+  <img src="https://img.shields.io/badge/version-1.2.0-orange" alt="Version" />
 </p>
 
 <p align="center">
