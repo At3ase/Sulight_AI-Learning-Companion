@@ -3,7 +3,7 @@ import { createWindow } from './window'
 import { initDatabase } from './services/database/connection'
 import { registerAllIPCHandlers } from './ipc'
 import { closeDatabase } from './services/database/connection'
-import { migrateLocalToCustom } from './services/credential-store'
+import { migrateLocalToCustom, runCredentialMigration } from './services/credential-store'
 
 let mainWindow: BrowserWindow | null = null
 
@@ -25,7 +25,7 @@ app.whenReady().then(async () => {
   try {
     await initDatabase()
   } catch (err) {
-    console.error('Failed to initialize database:', err)
+    console.error('[DB] Failed to initialize database:', (err as Error)?.message || err)
     // Attempt recovery: rename the corrupted DB and create a fresh one
     try {
       const { join } = require('path')
@@ -35,12 +35,12 @@ app.whenReady().then(async () => {
       const backupPath = dbPath + '.corrupted.' + Date.now() + '.bak'
       if (existsSync(dbPath)) {
         renameSync(dbPath, backupPath)
-        console.log(`Corrupted DB backed up to: ${backupPath}`)
+        console.error(`[DB] Corrupted database backed up (recovery attempt)`)
       }
       // Retry with fresh DB
       await initDatabase()
     } catch (retryErr) {
-      console.error('Database recovery failed:', retryErr)
+      console.error('[DB] Database recovery failed:', (retryErr as Error)?.message || retryErr)
       dialog.showErrorBox('数据库错误', '无法初始化数据库。请尝试重启应用或删除数据目录后重试。')
       app.quit()
       return
@@ -50,11 +50,14 @@ app.whenReady().then(async () => {
   // Register IPC handlers
   registerAllIPCHandlers()
 
+  // Run credential key migration (hardcoded → per-machine)
+  runCredentialMigration()
+
   // Migrate old 'local' provider → new 'custom' provider
   try {
     migrateLocalToCustom()
   } catch (err) {
-    console.error('Provider migration failed:', err)
+    console.error('[Credentials] Provider migration failed:', (err as Error)?.message || err)
   }
 
   // Create main window

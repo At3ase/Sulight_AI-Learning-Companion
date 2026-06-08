@@ -203,8 +203,8 @@ export function FirstPrinciplesView() {
         { role: 'user', content: text },
       ])
 
-      if (trimmed > 0) {
-        console.log(`[FirstPrinciples] Context window: trimmed ${trimmed} older messages`)
+      if (import.meta.env.DEV && trimmed > 0) {
+        console.debug(`[FirstPrinciples] Context window: trimmed ${trimmed} older messages`)
       }
 
       const result = await window.electronAPI.ai.streamChat({

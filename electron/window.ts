@@ -12,7 +12,7 @@ export function createWindow(): BrowserWindow {
     title: 'Learning Assistant',
     webPreferences: {
       preload: join(__dirname, 'preload.js'),
-      sandbox: false,
+      sandbox: true,
       contextIsolation: true,
       nodeIntegration: false,
     },

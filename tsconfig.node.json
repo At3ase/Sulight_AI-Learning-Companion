@@ -11,7 +11,9 @@
     "outDir": "dist-electron",
     "rootDir": "electron",
     "types": ["node"],
-    "sourceMap": true
+    "sourceMap": false,
+    "inlineSourceMap": false,
+    "declaration": false
   },
   "include": ["electron/**/*"]
 }

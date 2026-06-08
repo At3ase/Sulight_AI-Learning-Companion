@@ -168,8 +168,9 @@ export function FeynmanView() {
         { role: 'user', content: text },
       ])
 
-      if (trimmed > 0) {
-        console.log(`[Feynman] Context window: trimmed ${trimmed} older messages`)
+      // Context window trimming is logged only in dev mode
+      if (import.meta.env.DEV && trimmed > 0) {
+        console.debug(`[Feynman] Context window: trimmed ${trimmed} older messages`)
       }
 
       const result = await window.electronAPI.ai.streamChat({
@@ -406,6 +407,19 @@ export function FeynmanView() {
         >
           开始学习
         </button>
+
+        <div className="card p-5 space-y-3">
+          <h3 className="font-medium text-sm" style={{ color: 'var(--text-primary)' }}>
+            如何更好地使用费曼学习法：
+          </h3>
+          <ol className="space-y-2 list-decimal list-inside text-body-sm" style={{ color: 'var(--text-secondary)' }}>
+            <li>选择一个你想掌握的概念，用最简单的语言向"小费"解释它</li>
+            <li>假装你在教一个完全不懂的人——避免使用专业术语和复杂词汇</li>
+            <li>AI 会指出你解释中的模糊点和知识盲区</li>
+            <li>回到学习材料中补充理解，然后重新组织语言再解释一遍</li>
+            <li>反复迭代，直到你能用大白话讲清楚——这时你才是真正理解了</li>
+          </ol>
+        </div>
       </div>
     )
   }

@@ -117,7 +117,7 @@ function saveToDisk(): void {
       try { unlinkSync(tmpPath) } catch {}
     }
   } catch (err) {
-    console.error('[DB] Failed to save database to disk:', err)
+    console.error(`[DB] Failed to save database:`, (err as Error)?.message || err)
     // Last resort: try direct overwrite if we still have data
     if (data) {
       try { writeFileSync(dbPath, Buffer.from(data)) } catch {}
@@ -151,10 +151,9 @@ export async function initDatabase(): Promise<void> {
   if (existsSync(dbPath)) {
     const fileBuffer = readFileSync(dbPath)
     db = new SQL.Database(fileBuffer)
-    console.log(`Database loaded from: ${dbPath}`)
+    // Log only that DB was loaded, not the full path
   } else {
     db = new SQL.Database()
-    console.log(`New database created at: ${dbPath}`)
   }
 
   // Enable WAL mode (best effort - sql.js may not support all pragmas)

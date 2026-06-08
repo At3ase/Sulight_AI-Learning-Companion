@@ -25,6 +25,13 @@ export function registerAIHandlers(): void {
 
   // ── Stream Chat ───────────────────────────────────────
   ipcMain.handle('ai:streamChat', async (event, params: any) => {
+    // Basic input validation
+    if (!params || !params.provider || !Array.isArray(params.messages)) {
+      throw new Error('Invalid parameters: provider and messages are required')
+    }
+    if (params.messages.length === 0) {
+      throw new Error('At least one message is required')
+    }
     const { provider, messages, options, sessionId } = params
     const db = getDatabase()
     const interactionId = randomUUID()
@@ -64,6 +71,13 @@ export function registerAIHandlers(): void {
 
   // ── Complete (non-streaming) ──────────────────────────
   ipcMain.handle('ai:complete', async (_e, params: any) => {
+    // Basic input validation
+    if (!params || !params.provider || !Array.isArray(params.messages)) {
+      throw new Error('Invalid parameters: provider and messages are required')
+    }
+    if (params.messages.length === 0) {
+      throw new Error('At least one message is required')
+    }
     const { provider, messages, options, sessionId } = params
     const db = getDatabase()
     const interactionId = randomUUID()

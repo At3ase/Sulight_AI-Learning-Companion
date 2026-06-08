@@ -180,8 +180,8 @@ export function DashboardView() {
         </div>
       )}
 
-      {/* ═══ Getting Started (only if no widgets added and no active session) ═══ */}
-      {!activeSession && enabledWidgets.length === 0 && (
+      {/* ═══ Getting Started — always visible, page scrolls naturally ═══ */}
+      {!activeSession && (
         <div className="card p-5">
           <h2 className="font-semibold mb-4 text-h3" style={{ color: 'var(--text-primary)' }}>
             快速上手

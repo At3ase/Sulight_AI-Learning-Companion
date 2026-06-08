@@ -11,6 +11,13 @@ export function registerSettingsHandlers(): void {
   })
 
   ipcMain.handle('settings:set', (_e, key: string, value: string) => {
+    // Input validation: key must be a non-empty string from known setting keys
+    if (!key || typeof key !== 'string' || key.length > 100) {
+      throw new Error('Invalid settings key')
+    }
+    if (typeof value !== 'string' || value.length > 10000) {
+      throw new Error('Invalid settings value')
+    }
     const db = getDatabase()
     db.prepare(
       'INSERT INTO app_settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value'

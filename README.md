@@ -53,7 +53,8 @@
 - **豆包 (火山引擎)** — 字节跳动
 - **Ollama** — 本地模型，隐私零泄露
 - 统一「自定义 API」卡片，下拉选择预设即可配置
-- 支持流式输出、连接测试、API Key AES-256-GCM 加密存储
+- 支持流式输出、连接测试
+- API Key 使用 AES-256-GCM 加密，每台设备生成独立密钥，确保密钥不会因源码公开而泄露
 
 ---
 
@@ -75,10 +76,10 @@
 ### 方式一：安装包（推荐）
 
 1. 前往 [Releases](https://github.com/At3ase/Sulight_AI-Learning-Companion/releases) 页面
-2. 点击[百度网盘下载链接](https://pan.baidu.com/s/1CYPjuXci62nBur0_kIa2uQ)（提取码：`66xy`）下载 `Learning Assistant-1.1.0-win.zip`
+2. 下载最新版本的安装包（`Learning Assistant-<version>-win.zip`）
 3. 解压后运行 `Learning Assistant.exe`
 
-> 💡 安装包体积约 180MB，已托管至百度网盘，Release 页面提供网盘链接。
+> 💡 安装包体积约 180MB，托管于 GitHub Releases。
 
 ### 方式二：开发者启动
 
@@ -104,7 +105,7 @@ npm run dev
 | 图表 | Recharts 3 |
 | 图标 | Lucide React |
 | 数据库 | sql.js (SQLite → WASM，零原生依赖) |
-| 加密 | AES-256-GCM (API Key 存储) |
+| 加密 | AES-256-GCM (每台设备独立密钥，API Key 安全存储) |
 | 文件解析 | pdf-parse + mammoth (DOCX) |
 | AI SDK | @anthropic-ai/sdk + openai |
 | Markdown | react-markdown + marked + turndown |

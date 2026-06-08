@@ -1,6 +1,9 @@
 import { ipcMain } from 'electron'
 import { randomUUID } from 'crypto'
 import { getDatabase } from '../services/database/connection'
+import { getProvider } from '../services/ai/providers'
+import { getCredentials } from '../services/credential-store'
+import { buildGenerationPrompt, parseGeneratedCards } from '../services/review/card-generator'
 
 export function registerDatabaseHandlers(): void {
   const db = getDatabase
@@ -109,9 +112,12 @@ export function registerDatabaseHandlers(): void {
   })
 
   ipcMain.handle('db:materials:search', (_e, query: string) => {
+    // Input validation: limit search query length to prevent abuse
+    if (!query || typeof query !== 'string') return []
+    const sanitized = query.slice(0, 200)
     return db().prepare(
       'SELECT * FROM materials WHERE title LIKE ? OR content_text LIKE ? LIMIT 50'
-    ).all(`%${query}%`, `%${query}%`)
+    ).all(`%${sanitized}%`, `%${sanitized}%`)
   })
 
   ipcMain.handle('db:materials:update', (_e, id: string, data: any) => {
@@ -156,6 +162,12 @@ export function registerDatabaseHandlers(): void {
   })
 
   ipcMain.handle('db:sessions:create', (_e, data: any) => {
+    if (!data || typeof data.title !== 'string' || !data.mode) {
+      throw new Error('Session title and mode are required')
+    }
+    if (!['feynman', 'first_principles', 'socratic'].includes(data.mode)) {
+      throw new Error(`Invalid session mode: ${data.mode}`)
+    }
     const id = randomUUID()
     db().prepare(`
       INSERT INTO study_sessions (id, title, mode, subject_id, topic_id, material_id, status)
@@ -275,6 +287,13 @@ export function registerDatabaseHandlers(): void {
   })
 
   ipcMain.handle('db:flashcards:create', (_e, data: any) => {
+    // Input validation: prevent excessively large card content
+    if (!data || typeof data.front !== 'string' || typeof data.back !== 'string') {
+      throw new Error('Flashcard front and back text are required')
+    }
+    if (data.front.length > 4000 || data.back.length > 8000) {
+      throw new Error('Flashcard content exceeds maximum length')
+    }
     const id = randomUUID()
     db().prepare(`
       INSERT INTO flashcards (id, material_id, feynman_attempt_id, socratic_turn_id, topic_id, front, back, next_review_at)
@@ -313,10 +332,6 @@ export function registerDatabaseHandlers(): void {
   })
 
   ipcMain.handle('db:flashcards:generate', async (_e, data: { sessionContent: string; topicId?: string; topicName?: string; materialExcerpt?: string }) => {
-    const { getProvider } = require('../services/ai/providers')
-    const { getCredentials } = require('../services/credential-store')
-    const { buildGenerationPrompt, parseGeneratedCards } = require('../services/review/card-generator')
-
     // Use the active provider for card generation
     const activeProvider = db().prepare("SELECT value FROM app_settings WHERE key = 'active_provider'").get() as any
     const providerName = activeProvider?.value || 'claude'
@@ -335,7 +350,7 @@ export function registerDatabaseHandlers(): void {
     const result = await provider.complete(
       [{ role: 'user', content: prompt }],
       {
-        model: credentials.model || (providerName === 'claude' ? 'claude-sonnet-4-6' : providerName === 'openai' ? 'gpt-4o' : ''),
+        model: providerName === 'claude' ? 'claude-sonnet-4-6' : providerName === 'openai' ? 'gpt-4o' : '',
         apiKey: credentials.apiKey,
         baseUrl: credentials.baseUrl,
         maxTokens: 1000,
@@ -751,6 +766,16 @@ export function registerDatabaseHandlers(): void {
   })
 
   ipcMain.handle('db:chatMessages:create', (_e, data: { sessionId: string; role: string; content: string; metadata?: string }) => {
+    // Input validation: prevent excessively large messages
+    if (!data || !data.sessionId || !data.role || typeof data.content !== 'string') {
+      throw new Error('sessionId, role, and content are required')
+    }
+    if (!['user', 'assistant', 'system'].includes(data.role)) {
+      throw new Error(`Invalid message role: ${data.role}`)
+    }
+    if (data.content.length > 100000) {
+      throw new Error('Message content exceeds maximum length')
+    }
     const id = randomUUID()
     const order = ((db().prepare(
       'SELECT COALESCE(MAX(message_order), -1) as maxOrder FROM chat_messages WHERE session_id = ?'

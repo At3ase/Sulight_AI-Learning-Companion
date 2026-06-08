@@ -180,8 +180,8 @@ export function SocraticView() {
         { role: 'user', content: text },
       ])
 
-      if (trimmed > 0) {
-        console.log(`[Socratic] Context window: trimmed ${trimmed} older messages`)
+      if (import.meta.env.DEV && trimmed > 0) {
+        console.debug(`[Socratic] Context window: trimmed ${trimmed} older messages`)
       }
 
       const result = await window.electronAPI.ai.streamChat({

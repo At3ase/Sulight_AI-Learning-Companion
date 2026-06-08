@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useKnowledgeStore } from '@/stores/knowledge.store'
 import {
   Library, Plus, FileText, Upload, Search, Trash2, BookOpen,
-  FolderOpen, ChevronRight, Folder, File, Loader2, Sparkles
+  FolderOpen, ChevronRight, Folder, File, Loader2, Sparkles, Pencil, Check, X
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 
@@ -10,9 +10,9 @@ export function KnowledgeBaseView() {
   const {
     subjects, topics, materials,
     selectedSubjectId, selectedTopicId, selectedSubject,
-    loadSubjects, createSubject, deleteSubject,
-    selectSubject, loadTopics, createTopic, deleteTopic,
-    selectTopic, loadMaterials, searchMaterials
+    loadSubjects, createSubject, updateSubject, deleteSubject,
+    selectSubject, loadTopics, createTopic, updateTopic, deleteTopic,
+    selectTopic, loadMaterials, updateMaterial, searchMaterials
   } = useKnowledgeStore()
 
   const [newSubjectName, setNewSubjectName] = useState('')
@@ -24,6 +24,57 @@ export function KnowledgeBaseView() {
   const [searchResults, setSearchResults] = useState<any[]>([])
   const [isSearching, setIsSearching] = useState(false)
   const [isImporting, setIsImporting] = useState(false)
+
+  // Rename state
+  const [renaming, setRenaming] = useState<{ type: 'subject' | 'topic' | 'material'; id: string } | null>(null)
+  const [renameValue, setRenameValue] = useState('')
+  const renameInputRef = useRef<HTMLInputElement>(null)
+
+  // Focus rename input when it appears
+  useEffect(() => {
+    if (renaming && renameInputRef.current) {
+      renameInputRef.current.focus()
+      renameInputRef.current.select()
+    }
+  }, [renaming])
+
+  const startRename = (type: 'subject' | 'topic' | 'material', id: string, currentName: string) => {
+    setRenaming({ type, id })
+    setRenameValue(currentName)
+  }
+
+  const cancelRename = () => {
+    setRenaming(null)
+    setRenameValue('')
+  }
+
+  const commitRename = async () => {
+    if (!renaming || !renameValue.trim()) {
+      cancelRename()
+      return
+    }
+    const trimmed = renameValue.trim()
+    try {
+      if (renaming.type === 'subject') {
+        await updateSubject(renaming.id, { name: trimmed })
+        toast.success('科目已重命名')
+      } else if (renaming.type === 'topic') {
+        await updateTopic(renaming.id, { name: trimmed })
+        toast.success('主题已重命名')
+      } else if (renaming.type === 'material') {
+        await updateMaterial(renaming.id, { title: trimmed })
+        toast.success('资料已重命名')
+      }
+    } catch {
+      toast.error('重命名失败')
+    }
+    cancelRename()
+  }
+
+  const handleRenameKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') commitRename()
+    if (e.key === 'Escape') cancelRename()
+  }
 
   useEffect(() => { loadSubjects() }, [])
 
@@ -245,24 +296,54 @@ export function KnowledgeBaseView() {
               </p>
             ) : (
               subjects.map(s => (
-                <button
-                  key={s.id}
-                  onClick={() => handleSelectSubject(s.id)}
-                  className="w-full flex items-center gap-2 px-3 py-2.5 rounded-md text-sm transition-all duration-fast"
-                  style={{
-                    backgroundColor: selectedSubjectId === s.id ? 'rgba(249, 115, 22, 0.08)' : 'transparent',
-                    color: selectedSubjectId === s.id ? '#C2410C' : 'var(--text-secondary)',
-                  }}
-                >
-                  <span>{s.icon}</span>
-                  <span className="flex-1 text-left truncate">{s.name}</span>
-                  <Trash2
-                    size={14}
-                    className="opacity-0 group-hover:opacity-100 transition-opacity"
-                    style={{ color: 'var(--text-tertiary)' }}
-                    onClick={e => { e.stopPropagation(); handleDeleteSubject(s.id) }}
-                  />
-                </button>
+                <div key={s.id} className="group relative">
+                  {renaming?.type === 'subject' && renaming.id === s.id ? (
+                    <div className="flex items-center gap-1 px-2 py-1">
+                      <input
+                        ref={renameInputRef}
+                        type="text"
+                        value={renameValue}
+                        onChange={e => setRenameValue(e.target.value)}
+                        onKeyDown={handleRenameKeyDown}
+                        onBlur={commitRename}
+                        className="input-field text-sm flex-1 py-1"
+                        maxLength={100}
+                      />
+                      <button onClick={commitRename} className="p-1 rounded hover:bg-green-100 dark:hover:bg-green-900/30" title="确认">
+                        <Check size={14} className="text-green-600" />
+                      </button>
+                      <button onClick={cancelRename} className="p-1 rounded hover:bg-red-100 dark:hover:bg-red-900/30" title="取消">
+                        <X size={14} className="text-red-500" />
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => handleSelectSubject(s.id)}
+                      className="w-full flex items-center gap-2 px-3 py-2.5 rounded-md text-sm transition-all duration-fast"
+                      style={{
+                        backgroundColor: selectedSubjectId === s.id ? 'rgba(249, 115, 22, 0.08)' : 'transparent',
+                        color: selectedSubjectId === s.id ? '#C2410C' : 'var(--text-secondary)',
+                      }}
+                    >
+                      <span>{s.icon}</span>
+                      <span className="flex-1 text-left truncate">{s.name}</span>
+                      <Pencil
+                        size={13}
+                        className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+                        style={{ color: 'var(--text-tertiary)' }}
+                        onClick={e => { e.stopPropagation(); startRename('subject', s.id, s.name) }}
+                        title="重命名"
+                      />
+                      <Trash2
+                        size={14}
+                        className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+                        style={{ color: 'var(--text-tertiary)' }}
+                        onClick={e => { e.stopPropagation(); handleDeleteSubject(s.id) }}
+                        title="删除"
+                      />
+                    </button>
+                  )}
+                </div>
               ))
             )}
           </div>
@@ -308,24 +389,54 @@ export function KnowledgeBaseView() {
               <p className="text-xs py-4 text-center" style={{ color: 'var(--text-tertiary)' }}>暂无主题，点击 + 创建</p>
             ) : (
               topics.map(t => (
-                <button
-                  key={t.id}
-                  onClick={() => handleSelectTopic(t.id)}
-                  className="w-full flex items-center gap-2 px-3 py-2.5 rounded-md text-sm transition-all duration-fast"
-                  style={{
-                    backgroundColor: selectedTopicId === t.id ? 'rgba(249, 115, 22, 0.08)' : 'transparent',
-                    color: selectedTopicId === t.id ? '#C2410C' : 'var(--text-secondary)',
-                  }}
-                >
-                  <ChevronRight size={14} />
-                  <span className="flex-1 text-left truncate">{t.name}</span>
-                  <Trash2
-                    size={14}
-                    className="opacity-0 group-hover:opacity-100 transition-opacity"
-                    style={{ color: 'var(--text-tertiary)' }}
-                    onClick={e => { e.stopPropagation(); handleDeleteTopic(t.id) }}
-                  />
-                </button>
+                <div key={t.id} className="group relative">
+                  {renaming?.type === 'topic' && renaming.id === t.id ? (
+                    <div className="flex items-center gap-1 px-2 py-1">
+                      <input
+                        ref={renameInputRef}
+                        type="text"
+                        value={renameValue}
+                        onChange={e => setRenameValue(e.target.value)}
+                        onKeyDown={handleRenameKeyDown}
+                        onBlur={commitRename}
+                        className="input-field text-sm flex-1 py-1"
+                        maxLength={200}
+                      />
+                      <button onClick={commitRename} className="p-1 rounded hover:bg-green-100 dark:hover:bg-green-900/30" title="确认">
+                        <Check size={14} className="text-green-600" />
+                      </button>
+                      <button onClick={cancelRename} className="p-1 rounded hover:bg-red-100 dark:hover:bg-red-900/30" title="取消">
+                        <X size={14} className="text-red-500" />
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => handleSelectTopic(t.id)}
+                      className="w-full flex items-center gap-2 px-3 py-2.5 rounded-md text-sm transition-all duration-fast"
+                      style={{
+                        backgroundColor: selectedTopicId === t.id ? 'rgba(249, 115, 22, 0.08)' : 'transparent',
+                        color: selectedTopicId === t.id ? '#C2410C' : 'var(--text-secondary)',
+                      }}
+                    >
+                      <ChevronRight size={14} />
+                      <span className="flex-1 text-left truncate">{t.name}</span>
+                      <Pencil
+                        size={13}
+                        className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+                        style={{ color: 'var(--text-tertiary)' }}
+                        onClick={e => { e.stopPropagation(); startRename('topic', t.id, t.name) }}
+                        title="重命名"
+                      />
+                      <Trash2
+                        size={14}
+                        className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+                        style={{ color: 'var(--text-tertiary)' }}
+                        onClick={e => { e.stopPropagation(); handleDeleteTopic(t.id) }}
+                        title="删除"
+                      />
+                    </button>
+                  )}
+                </div>
               ))
             )}
           </div>
@@ -372,13 +483,43 @@ export function KnowledgeBaseView() {
               materials.map(m => (
                 <div
                   key={m.id}
-                  className="p-3 rounded-lg"
+                  className="p-3 rounded-lg group"
                   style={{ backgroundColor: 'var(--bg-inset)' }}
                 >
                   <div className="flex items-start gap-2">
                     <FileText size={16} style={{ color: 'var(--text-tertiary)' }} className="mt-0.5 shrink-0" />
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate" style={{ color: 'var(--text-primary)' }}>{m.title}</p>
+                      {renaming?.type === 'material' && renaming.id === m.id ? (
+                        <div className="flex items-center gap-1">
+                          <input
+                            ref={renameInputRef}
+                            type="text"
+                            value={renameValue}
+                            onChange={e => setRenameValue(e.target.value)}
+                            onKeyDown={handleRenameKeyDown}
+                            onBlur={commitRename}
+                            className="input-field text-sm flex-1 py-1"
+                            maxLength={200}
+                          />
+                          <button onClick={commitRename} className="p-1 rounded hover:bg-green-100 dark:hover:bg-green-900/30 shrink-0" title="确认">
+                            <Check size={14} className="text-green-600" />
+                          </button>
+                          <button onClick={cancelRename} className="p-1 rounded hover:bg-red-100 dark:hover:bg-red-900/30 shrink-0" title="取消">
+                            <X size={14} className="text-red-500" />
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-1">
+                          <p className="text-sm font-medium truncate" style={{ color: 'var(--text-primary)' }}>{m.title}</p>
+                          <Pencil
+                            size={12}
+                            className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+                            style={{ color: 'var(--text-tertiary)' }}
+                            onClick={() => startRename('material', m.id, m.title)}
+                            title="重命名"
+                          />
+                        </div>
+                      )}
                       <div className="flex items-center gap-2 mt-1">
                         <span className="text-xs uppercase" style={{ color: 'var(--text-tertiary)' }}>{m.source_type}</span>
                         {m.word_count && (

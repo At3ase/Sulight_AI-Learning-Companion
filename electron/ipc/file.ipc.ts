@@ -30,7 +30,15 @@ export function registerFileHandlers(): void {
     }
 
     try {
+      // Validate file extension server-side BEFORE parsing (defense in depth)
+      const ext = filePath.split('.').pop()?.toLowerCase()
+      const allowed = ['pdf', 'docx', 'md', 'txt']
+      if (!ext || !allowed.includes(ext)) {
+        throw new Error(`不支持的文件类型: .${ext || '未知'}。支持的类型: PDF, DOCX, MD, TXT`)
+      }
+
       const parsed = await parseFile(filePath)
+
       // Persist to database — this was the missing piece!
       const saved = saveMaterial(parsed, topicId || undefined)
       return { canceled: false, result: saved }

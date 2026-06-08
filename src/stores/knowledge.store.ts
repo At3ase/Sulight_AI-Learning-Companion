@@ -33,13 +33,16 @@ interface KnowledgeState {
 
   loadSubjects: () => Promise<void>
   createSubject: (data: Partial<Subject>) => Promise<Subject | null>
+  updateSubject: (id: string, data: Partial<Subject>) => Promise<Subject | null>
   deleteSubject: (id: string) => Promise<void>
   selectSubject: (id: string | null) => void
   loadTopics: (subjectId: string) => Promise<void>
   createTopic: (data: Partial<Topic>) => Promise<Topic | null>
+  updateTopic: (id: string, data: Partial<Topic>) => Promise<Topic | null>
   deleteTopic: (id: string) => Promise<void>
   selectTopic: (id: string | null) => void
   loadMaterials: (topicId: string) => Promise<void>
+  updateMaterial: (id: string, data: { title: string }) => Promise<Material | null>
   searchMaterials: (query: string) => Promise<void>
   loadSubjectProgress: () => Promise<void>
 }
@@ -65,6 +68,18 @@ export const useKnowledgeStore = create<KnowledgeState>((set, get) => ({
     const subject = await window.electronAPI.db.subjects.create(data)
     await get().loadSubjects()
     return subject
+  },
+
+  updateSubject: async (id, data) => {
+    if (!window.electronAPI) return null
+    const updated = await window.electronAPI.db.subjects.update(id, data)
+    if (updated) {
+      set((s) => ({
+        subjects: s.subjects.map((sub) => sub.id === id ? updated : sub),
+        selectedSubject: s.selectedSubjectId === id ? updated : s.selectedSubject,
+      }))
+    }
+    return updated
   },
 
   deleteSubject: async (id) => {
@@ -97,6 +112,17 @@ export const useKnowledgeStore = create<KnowledgeState>((set, get) => ({
     return topic
   },
 
+  updateTopic: async (id, data) => {
+    if (!window.electronAPI) return null
+    const updated = await window.electronAPI.db.topics.update(id, data)
+    if (updated) {
+      set((s) => ({
+        topics: s.topics.map((t) => t.id === id ? updated : t),
+      }))
+    }
+    return updated
+  },
+
   deleteTopic: async (id) => {
     if (!window.electronAPI) return
     await window.electronAPI.db.topics.delete(id)
@@ -116,6 +142,17 @@ export const useKnowledgeStore = create<KnowledgeState>((set, get) => ({
     if (!window.electronAPI) return
     const materials = await window.electronAPI.db.materials.listByTopic(topicId)
     set({ materials })
+  },
+
+  updateMaterial: async (id, data) => {
+    if (!window.electronAPI) return null
+    const updated = await window.electronAPI.db.materials.update(id, data)
+    if (updated) {
+      set((s) => ({
+        materials: s.materials.map((m) => m.id === id ? updated : m),
+      }))
+    }
+    return updated
   },
 
   searchMaterials: async (query) => {
